@@ -76,14 +76,14 @@
 
     <div>
       <input type="number" id="donationInput" placeholder="Valor a doar (€)" />
-      <button onclick="handleDonate()">Doar</button>
+      <button id="donateBtn">Doar</button>
     </div>
 
     <div id="animation" class="animation" style="display: none;">💸 Doação recebida! 💸</div>
   </div>
 
   <script>
-    // Inicializar com valor salvo
+    const goal = 200;
     let amountRaised = parseFloat(localStorage.getItem('amountRaised')) || 0;
 
     function updateProgress() {
@@ -91,8 +91,9 @@
       document.getElementById('progressBar').style.width = percentage + '%';
       document.getElementById('amountText').textContent = `${amountRaised.toFixed(2)}€ de ${goal}€`;
 
-      if (amountRaised >= goal) {
+      if (amountRaised >= goal && !document.getElementById('celebration')) {
         const celebration = document.createElement('div');
+        celebration.id = 'celebration';
         celebration.innerHTML = '🎉🎆🎉 Objetivo Atingido! 🎉🎆🎉';
         celebration.style.fontSize = '20px';
         celebration.style.color = '#d97706';
@@ -108,7 +109,7 @@
         document.getElementById('animation').style.display = 'block';
         setTimeout(() => {
           amountRaised = Math.min(amountRaised + value, goal);
-          localStorage.setItem('amountRaised', amountRaised); // Guardar valor
+          localStorage.setItem('amountRaised', amountRaised);
           updateProgress();
           document.getElementById('animation').style.display = 'none';
           input.value = '';
@@ -117,31 +118,9 @@
     }
 
     window.onload = () => {
+      document.getElementById('donateBtn').onclick = handleDonate;
       updateProgress();
     };
-
-    const goal = 200;
-    let amountRaised = 0;
-
-    function handleDonate() {
-      const input = document.getElementById('donationInput');
-      const value = parseFloat(input.value);
-      if (!isNaN(value) && value > 0) {
-        document.getElementById('animation').style.display = 'block';
-        setTimeout(() => {
-          amountRaised = Math.min(amountRaised + value, goal);
-          updateProgress();
-          document.getElementById('animation').style.display = 'none';
-          input.value = '';
-        }, 1000);
-      }
-    }
-
-    function updateProgress() {
-      const percentage = Math.min((amountRaised / goal) * 100, 100);
-      document.getElementById('progressBar').style.width = percentage + '%';
-      document.getElementById('amountText').textContent = `${amountRaised.toFixed(2)}€ de ${goal}€`;
-    }
   </script>
 </body>
 </html>
