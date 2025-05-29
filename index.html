@@ -76,7 +76,7 @@
 
     <div>
       <input type="number" id="donationInput" placeholder="Valor a doar (€)" />
-      <button id="donateBtn">Doar</button>
+      <button onclick="handleDonate()">Doar</button>
     </div>
 
     <div id="animation" class="animation" style="display: none;">💸 Doação recebida! 💸</div>
@@ -84,7 +84,32 @@
 
   <script>
     const goal = 200;
-    let amountRaised = parseFloat(localStorage.getItem('amountRaised')) || 0;
+    let amountRaised = 0;
+
+    async function fetchAmount() {
+      const res = await fetch('/get');
+      const data = await res.json();
+      amountRaised = data.amount;
+      updateProgress();
+    }
+
+    async function handleDonate() {
+      const input = document.getElementById('donationInput');
+      const value = parseFloat(input.value);
+      if (!isNaN(value) && value > 0) {
+        document.getElementById('animation').style.display = 'block';
+        await fetch('/donate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: value })
+        });
+        setTimeout(async () => {
+          await fetchAmount();
+          document.getElementById('animation').style.display = 'none';
+          input.value = '';
+        }, 1000);
+      }
+    }
 
     function updateProgress() {
       const percentage = Math.min((amountRaised / goal) * 100, 100);
@@ -102,25 +127,7 @@
       }
     }
 
-    function handleDonate() {
-      const input = document.getElementById('donationInput');
-      const value = parseFloat(input.value);
-      if (!isNaN(value) && value > 0) {
-        document.getElementById('animation').style.display = 'block';
-        setTimeout(() => {
-          amountRaised = Math.min(amountRaised + value, goal);
-          localStorage.setItem('amountRaised', amountRaised);
-          updateProgress();
-          document.getElementById('animation').style.display = 'none';
-          input.value = '';
-        }, 1000);
-      }
-    }
-
-    window.onload = () => {
-      document.getElementById('donateBtn').onclick = handleDonate;
-      updateProgress();
-    };
+    window.onload = fetchAmount;
   </script>
 </body>
 </html>
